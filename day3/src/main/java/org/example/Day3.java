@@ -27,10 +27,8 @@ public class Day3 {
         Matcher matcher = p.matcher(input);
         return matcher.results()
                 .mapToInt(res -> {
-                    //System.out.println(res.start());
                     int left = Integer.parseInt(res.group("left"));
                     int right = Integer.parseInt(res.group("right"));
-                    //System.out.println("left: " + left + " right: " + right);
                     return left * right;
                 }).sum();
     }
@@ -62,7 +60,7 @@ public class Day3 {
         final class Unset implements Nearest {
             private Unset() {
             }
-            public static final Unset INSTANCE = new Unset();
+            private static final Unset INSTANCE = new Unset();
         }
         value record Set(int start) implements Nearest {
 
@@ -83,14 +81,12 @@ public class Day3 {
             if (nearestDo instanceof Nearest.Set doSet) {
                 return doSet.start() > dontSet.start();
             } else {
-                // if neither, we assume start
                 return false;
             }
         } else {
             if (nearestDo instanceof Nearest.Set doSet) {
                 return true;
             } else {
-                // if neither, we assume start
                 return true;
             }
         }
