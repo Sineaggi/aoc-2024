@@ -1,8 +1,5 @@
 package org.example;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.MatchResult;
@@ -18,40 +15,32 @@ public class Day3 {
         try (var is = Day3.class.getResourceAsStream("/input")) {
             input = new String(is.readAllBytes());
         }
-        //logger.info("part 1: " + part1(input));
+        // prints 184576302
+        logger.info("part 1: " + part1(input));
+        // prints 118173507
         logger.info("part 2: " + part2(input));
     }
 
     private static int part1(String input) {
-        //return input.stream().mapToInt(Day3::safe).sum();
         Pattern p = Pattern.compile("mul\\((?<left>\\d{1,3}),(?<right>\\d{1,3})\\)");
 
         Matcher matcher = p.matcher(input);
-        //while (m.find()) {
-        //    System.out.println(++cnt + ": G1: " + m.group(1));
-        //}
         return matcher.results()
                 .mapToInt(res -> {
-                    System.out.println(res.start());
+                    //System.out.println(res.start());
                     int left = Integer.parseInt(res.group("left"));
                     int right = Integer.parseInt(res.group("right"));
-                    System.out.println("left: " + left + " right: " + right);
+                    //System.out.println("left: " + left + " right: " + right);
                     return left * right;
                 }).sum();
-        //184576302
-
     }
 
     private static int part2(String input) {
-        //return input.stream().mapToInt(Day3::safe).sum();
         Pattern p = Pattern.compile("mul\\((?<left>\\d{1,3}),(?<right>\\d{1,3})\\)");
         Pattern y = Pattern.compile("do\\(\\)");
         Pattern n = Pattern.compile("don't\\(\\)");
 
         Matcher matcher = p.matcher(input);
-        //while (m.find()) {
-        //    System.out.println(++cnt + ": G1: " + m.group(1));
-        //}
         List<Integer> dos = y.matcher(input).results().map(MatchResult::start).toList();
         System.out.println("dos: " + dos);
         List<Integer> donts = n.matcher(input).results().map(MatchResult::start).toList();
@@ -67,9 +56,6 @@ public class Day3 {
                     }
                     return 0;
                 }).sum();
-        // indexedResults.stream().filter()
-
-        //184576302
     }
 
     sealed interface Nearest {
@@ -90,80 +76,23 @@ public class Day3 {
     }
 
     private static boolean inDos(int start, List<Integer> dos, List<Integer> donts, String debugString) {
-        //Nearest nearestDo = Nearest.Unset.INSTANCE;
-        //Nearest nearestDont = Nearest.Unset.INSTANCE;
-        //System.out.println("start: " + start);
         Predicate<Integer> beforeStart = x -> x < start;
-        //System.out.println(Optional.class.isValue());
-        //Nearest nearestDo2 = dos.stream().filter(beforeStart).max(Comparator.naturalOrder()).map(Nearest::set).orElseGet(Nearest::unset);
-        //Nearest nearestDont2 = donts.stream().filter(beforeStart).max(Comparator.naturalOrder()).map(Nearest::set).orElseGet(Nearest::unset);
-        //for (int i = 0; i < dos.size(); i++) {
-        //    var doStart = dos.get(i);
-        //    if (doStart > start) {
-        //        if (i == 0) {
-        //            // nearestDo = 0;
-        //        } else {
-        //            nearestDo = new Nearest.Set(dos.get(i - 1));
-        //        }
-        //    }
-        //}
-        //for (int i = 0; i < donts.size(); i++) {
-        //    var dontStart = donts.get(i);
-        //    if (dontStart > start) {
-        //        if (i == 0) {
-        //            // can't start at dont
-        //            // nearestDont = 0;
-        //        } else {
-        //            nearestDont = new Nearest.Set(donts.get(i - 1));
-        //        }
-        //    }
-        //}
-        //if (!nearestDo2.equals(nearestDo)) {
-        //    throw new RuntimeException("nearest doesn't match " + nearestDo2 + "," + nearestDo);
-        //}
-        //if (!nearestDont2.equals(nearestDont)) {
-        //    throw new RuntimeException("nearest doesn't match " + nearestDont2 + "," + nearestDont);
-        //}
-        //System.out.println(nearestDont + " " + nearestDo);
         Nearest nearestDo = dos.stream().filter(beforeStart).max(Comparator.naturalOrder()).map(Nearest::set).orElseGet(Nearest::unset);
         Nearest nearestDont = donts.stream().filter(beforeStart).max(Comparator.naturalOrder()).map(Nearest::set).orElseGet(Nearest::unset);
-        if (nearestDont instanceof Nearest.Unset) {
-            if (nearestDo instanceof Nearest.Unset) {
-                // if neither, we assume start
-                //System.out.println("donts " + donts);
-                //System.out.println("true cuz dont isn't set and do isn't set for " + debugString);
-                return true;
-            } else if (nearestDo instanceof Nearest.Set doSet) {
-                //System.out.println("true cuz dont isn't set and do is set for " + debugString);
-                return true;
+        if (nearestDont instanceof Nearest.Set dontSet) {
+            if (nearestDo instanceof Nearest.Set doSet) {
+                return doSet.start() > dontSet.start();
             } else {
-                throw new IllegalStateException("can't reach");
-            }
-        } else if (nearestDont instanceof Nearest.Set dontSet) {
-            if (nearestDo instanceof Nearest.Unset) {
                 // if neither, we assume start
-                //System.out.println("false cuz dont is set and do isn't set for " + debugString);
                 return false;
-            } else if (nearestDo instanceof Nearest.Set doSet) {
-                if (doSet.start() > dontSet.start()) {
-                    //System.out.println("false doSet " + doSet + " is closer than dontSet " + dontSet + " " + debugString);
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                throw new IllegalStateException("can't reach");
             }
         } else {
-            throw new IllegalStateException("can't reach");
+            if (nearestDo instanceof Nearest.Set doSet) {
+                return true;
+            } else {
+                // if neither, we assume start
+                return true;
+            }
         }
-        //int dontDist = start - nearestDont;
-        //int doDist = start - nearestDo;
-        //if (doDist > dontDist) {
-        //    System.out.println("do nearer");
-        //    return true;
-        //}
-        //System.out.println("dont nearer");
-        //return false;
     }
 }
