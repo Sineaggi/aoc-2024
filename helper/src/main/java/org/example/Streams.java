@@ -11,6 +11,7 @@ import java.util.stream.StreamSupport;
 
 public class Streams {
     // copied from https://stackoverflow.com/a/46230233
+    // todo: support either list terminating early
     public static <L, R, T> Stream<T> zip(Stream<L> leftStream, Stream<R> rightStream, BiFunction<L, R, T> combiner) {
         Spliterator<L> lefts = leftStream.spliterator();
         Spliterator<R> rights = rightStream.spliterator();
@@ -28,7 +29,14 @@ public class Streams {
 
     public static <T> Stream<Indexed<T>> index(Collection<T> collection) {
         var indices = IntStream.range(0, collection.size()).boxed();
-        Stream<Indexed<T>> indexed = zip(indices, collection.stream(), (integer, t) -> new Indexed(t, integer));
+        Stream<Indexed<T>> indexed = zip(collection.stream(), indices, (t, index) -> new Indexed(t, index));
+        return indexed;
+    }
+
+
+    public static <T> Stream<Indexed<T>> index(Stream<T> stream) {
+        var indices = IntStream.iterate(0, i -> i + 1).boxed();
+        Stream<Indexed<T>> indexed = zip(stream, indices, (t, index) -> new Indexed(t, index));
         return indexed;
     }
 }

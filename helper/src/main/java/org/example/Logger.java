@@ -11,6 +11,9 @@ public class Logger {
     public void info(Object message) {
         logger.log(System.Logger.Level.INFO, message);
     }
+    public void debug(Object message) {
+        logger.log(System.Logger.Level.DEBUG, message);
+    }
     public void trace(Object message) {
         logger.log(System.Logger.Level.TRACE, message);
     }
