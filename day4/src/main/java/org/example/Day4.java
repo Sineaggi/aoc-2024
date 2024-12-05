@@ -9,41 +9,34 @@ public class Day4 {
     private static final Logger logger = Logger.getLogger(Day4.class);
 
     public static void main(String[] args) throws Exception {
-        Map<Point, String> input;
+        Grid<String> input;
         try (var is = Day4.class.getResourceAsStream("/input")) {
             String str = new String(is.readAllBytes());
-            input = Streams.index(str.lines()).flatMap(indexedLine -> {
+            var map = Streams.index(str.lines()).flatMap(indexedLine -> {
                 int y = indexedLine.index();
                 return Streams.index(indexedLine.obj().chars().boxed()).map(indexedChar -> {
                         int x = indexedChar.index();
-                        return Map.entry(new Point(x, y), new String(Character.toChars(indexedChar.obj())));
+                        return Map.entry(new Grid.Point(x, y), new String(Character.toChars(indexedChar.obj())));
                 });
             }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            input = new Grid<>(map);
             logger.debug(input);
         }
         logger.info("part 1: " + part1(input));
+        logger.info("part 2: " + part2(input));
     }
 
-    value record Point(int x, int y) {
-        Point offset(int xOffset, int yOffset) {
-            return new Point(x + xOffset, y + yOffset);
-        }
-    }
-
-    private static int part1(Map<Point, String> input) {
-        return input.entrySet()
-                .stream()
-                .mapToInt(entry -> find(input, entry.getKey(), "XMAS"))
+    private static int part1(Grid<String> input) {
+        return input.entries()
+                .mapToInt(entry -> find(input, entry.getKey()))
                 .sum();
     }
 
-    private static int find(Map<Point, String> input, Point point, String string) {
+    private static int find(Grid<String> input, Grid.Point point) {
         String charAtPoint = input.get(point);
-        String lookingFor = new String(Character.toChars(string.charAt(0)));
-        //System.out.println(lookingFor);
-        String rest = string.substring(1);
+        String lookingFor = "X";
+        String rest = "MAS";
         logger.debug("at point " + charAtPoint + ", looking for: " + lookingFor + ", rest: " + rest);
-        //System.out.println("looking for: " + string + ", next " + rest);
         if (charAtPoint != null && charAtPoint.equals(lookingFor)) {
             logger.debug("Found X at point: " + point);
             return findContinue(input, point, rest, p -> p.offset(1, 0))
@@ -60,8 +53,8 @@ public class Day4 {
         }
     }
 
-    private static int findContinue(Map<Point, String> input, Point prevPoint, String string, Function<Point, Point> directionIncFunction) {
-        Point point = directionIncFunction.apply(prevPoint);
+    private static int findContinue(Grid<String> input, Grid.Point prevPoint, String string, Function<Grid.Point, Grid.Point> directionIncFunction) {
+        Grid.Point point = directionIncFunction.apply(prevPoint);
         String charAtPoint = input.get(point);
         String lookingFor = new String(Character.toChars(string.charAt(0)));
         logger.debug(lookingFor);
@@ -77,5 +70,26 @@ public class Day4 {
         } else {
             return 0;
         }
+    }
+
+    private static int part2(Grid<String> input) {
+        return input.entries()
+                .mapToInt(entry -> find2(input, entry.getKey()))
+                .sum();
+    }
+
+    private static int find2(Grid<String> input, Grid.Point point) {
+        String charAtPoint = input.get(point);
+        String lookingFor = "A";
+        if (charAtPoint != null && charAtPoint.equals(lookingFor)) {
+            logger.debug("Found A at point: " + point);
+            if ((input.contains(point.offset(1, 1), "M") && input.contains(point.offset(-1, 1), "M") && input.contains(point.offset(-1, -1), "S") && input.contains(point.offset(1, -1), "S")) ||
+                (input.contains(point.offset(1, 1), "M") && input.contains(point.offset(-1, 1), "S") && input.contains(point.offset(-1, -1), "S") && input.contains(point.offset(1, -1), "M")) ||
+                (input.contains(point.offset(1, 1), "S") && input.contains(point.offset(-1, 1), "M") && input.contains(point.offset(-1, -1), "M") && input.contains(point.offset(1, -1), "S")) ||
+                (input.contains(point.offset(1, 1), "S") && input.contains(point.offset(-1, 1), "S") && input.contains(point.offset(-1, -1), "M") && input.contains(point.offset(1, -1), "M"))) {
+                return 1;
+            }
+        }
+        return 0;
     }
 }

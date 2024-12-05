@@ -33,7 +33,6 @@ public class Streams {
         return indexed;
     }
 
-
     public static <T> Stream<Indexed<T>> index(Stream<T> stream) {
         var indices = IntStream.iterate(0, i -> i + 1).boxed();
         Stream<Indexed<T>> indexed = zip(stream, indices, (t, index) -> new Indexed(t, index));
