@@ -13,8 +13,8 @@ public class Day6 {
             String str = new String(is.readAllBytes());
             mapLocGrid = parse(str);
         }
-        //logger.info("part 1: " + part1(mapLocGrid)); // 4722
-        logger.info("part 2: " + part2(mapLocGrid)); // 4709 is too high
+        logger.info("part 1: " + part1(mapLocGrid)); // 4722
+        logger.info("part 2: " + part2(mapLocGrid)); // 1602
     }
 
     public static Grid<String> parse(String input) {
@@ -100,33 +100,27 @@ public class Day6 {
             if (mapLocGrid.contains(newPoint, ".") || mapLocGrid.contains(newPoint, "^")) {
                 point = newPoint;
                 points.add(point);
-                continue;
             } else if (mapLocGrid.contains(newPoint, "#")) {
                 switch (dir) {
                     case "^" -> {
                         xOff = 1;
                         yOff = 0;
                         dir = ">";
-                        //point = newPoint;
-                        continue;
                     }
                     case ">" -> {
                         xOff = 0;
                         yOff = 1;
                         dir = "v";
-                        //point = newPoint;
                     }
                     case "v" -> {
                         xOff = -1;
                         yOff = 0;
                         dir = "<";
-                        //point = newPoint;
                     }
                     case "<" -> {
                         xOff = 0;
                         yOff = -1;
                         dir = "^";
-                        //point = newPoint;
                     }
                     default -> {
                         throw new IllegalStateException();
@@ -138,75 +132,19 @@ public class Day6 {
             }
         }
         logger.debug(mapLocGrid.replaceAll(points, "X"));
-        // return points.size();
 
         var potentialObstaclePoints = new HashSet<>(points);
         potentialObstaclePoints.remove(init); // cannot place an obstacle where the gnome started
 
-        Map<Grid.Point, Set<String>> gridDirs;// = new HashMap<>();
-
         Set<Grid.Point> obstacles = new HashSet<>();
 
-        System.out.println("potentialObstaclePoints" + potentialObstaclePoints.size());
+        logger.debug("potentialObstaclePoints" + potentialObstaclePoints.size());
         for (var pointBeen : potentialObstaclePoints) {
-            gridDirs = new HashMap<>();
             var newMapLocGrid = mapLocGrid.replace(pointBeen, "O");
-            System.out.println("newMapLocGrid terminates " + terminates(newMapLocGrid) + "\n" + newMapLocGrid);
-            ;
-            point = init;
-            xOff = 0;
-            yOff = -1;
-            gridDirs.computeIfAbsent(point, _ -> new HashSet<>()).add(dir);
-            int iter = 0;
-            while (true) {
-                iter++;
-                if (iter > 4000) {
-                    var currentPath = gridDirs.get(point);
-                    if (currentPath != null && currentPath.contains(dir)) {
-                        System.out.println("we loopin' bois");
-                        obstacles.add(pointBeen);
-                        break;
-                    }
-                }
+            logger.debug("newMapLocGrid terminates " + terminates(newMapLocGrid) + "\n" + newMapLocGrid);
 
-                var newPoint = point.offset(xOff, yOff);
-
-
-
-                if (newMapLocGrid.contains(newPoint, ".") || newMapLocGrid.contains(newPoint, "^")) {
-                    point = newPoint;
-
-                    gridDirs.computeIfAbsent(point, _ -> new HashSet<>()).add(dir);
-                } else if (newMapLocGrid.contains(newPoint, "#") || newMapLocGrid.contains(newPoint, "O")) {
-                    switch (dir) {
-                        case "^" -> {
-                            xOff = 1;
-                            yOff = 0;
-                            dir = ">";
-                        }
-                        case ">" -> {
-                            xOff = 0;
-                            yOff = 1;
-                            dir = "v";
-                        }
-                        case "v" -> {
-                            xOff = -1;
-                            yOff = 0;
-                            dir = "<";
-                        }
-                        case "<" -> {
-                            xOff = 0;
-                            yOff = -1;
-                            dir = "^";
-                        }
-                        default -> {
-                            throw new IllegalStateException();
-                        }
-                    }
-                } else {
-                    System.out.println("You're off the grid! You're out of control! " + newPoint);
-                    break;
-                }
+            if (!terminates(newMapLocGrid)) {
+                obstacles.add(pointBeen);
             }
         }
 
@@ -216,56 +154,62 @@ public class Day6 {
     }
 
     public static boolean terminates(Grid<String> mapLocGrid) {
-        System.out.println(mapLocGrid);
+        logger.debug(mapLocGrid);
         String dir = "^";
         var point = mapLocGrid.find(dir);
         int xOff = 0;
         int yOff = -1;
         Set<Grid.Point> points = new HashSet<>();
         points.add(point); // add guard's starting location
+
+        Map<Grid.Point, Set<String>> gridDirs = new HashMap<>();
+        gridDirs.computeIfAbsent(point, _ -> new HashSet<>()).add(dir);
+
         while (true) {
             var newPoint = point.offset(xOff, yOff);
+            var been = gridDirs.get(newPoint);
+            if (been != null && been.contains(dir)) {
+                return false; // we loopin'
+            }
+
             if (mapLocGrid.contains(newPoint, ".") || mapLocGrid.contains(newPoint, "^")) {
                 point = newPoint;
+
+                gridDirs.computeIfAbsent(point, _ -> new HashSet<>()).add(dir);
+
                 points.add(point);
-                continue;
             } else if (mapLocGrid.contains(newPoint, "#") || mapLocGrid.contains(newPoint, "O")) {
                 switch (dir) {
                     case "^" -> {
                         xOff = 1;
                         yOff = 0;
                         dir = ">";
-                        //point = newPoint;
-                        continue;
                     }
                     case ">" -> {
                         xOff = 0;
                         yOff = 1;
                         dir = "v";
-                        //point = newPoint;
                     }
                     case "v" -> {
                         xOff = -1;
                         yOff = 0;
                         dir = "<";
-                        //point = newPoint;
                     }
                     case "<" -> {
                         xOff = 0;
                         yOff = -1;
                         dir = "^";
-                        //point = newPoint;
                     }
                     default -> {
                         throw new IllegalStateException();
                     }
                 }
             } else {
-                System.out.println("You're off the grid! You're out of control! " + newPoint);
+                logger.debug("You're off the grid! You're out of control! " + newPoint);
                 break;
             }
         }
-        System.out.println(mapLocGrid.replaceAll(points, "X"));
+        logger.debug(mapLocGrid.replaceAll(points, "X"));
         return true;
     }
 }

@@ -49,7 +49,6 @@ public class Grid<E> {
         StringBuilder sb = new StringBuilder();
         var x = map.keySet().stream().mapToInt(Point::x).max().orElseThrow() + 1;
         var y = map.keySet().stream().mapToInt(Point::y).max().orElseThrow() + 1;
-        System.out.println("width: " + x + ", height: " + y);
         for (int j = 0; j < y; j++) {
             for (int i = 0; i < x; i++) {
                 sb.append(map.get(new Point(i, j)));
