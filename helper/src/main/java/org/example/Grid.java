@@ -1,7 +1,9 @@
 package org.example;
 
 import java.awt.*;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class Grid<E> {
@@ -38,5 +40,37 @@ public class Grid<E> {
 
     public E get(Point point) {
         return map.get(point);
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        var x = map.keySet().stream().mapToInt(Point::x).max().orElseThrow() + 1;
+        var y = map.keySet().stream().mapToInt(Point::y).max().orElseThrow() + 1;
+        System.out.println("width: " + x + ", height: " + y);
+        for (int j = 0; j < y; j++) {
+            for (int i = 0; i < x; i++) {
+                sb.append(map.get(new Point(i, j)));
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    public String debug() {
+        return map.toString();
+    }
+
+    public Point find(E s) {
+        return map.entrySet().stream().filter(i -> i.getValue().equals(s)).reduce((a, b) -> {
+            throw new IllegalStateException("Multiple elements: " + a + ", " + b);
+        }).map(Map.Entry::getKey).orElseThrow();
+    }
+
+    public Grid<E> replaceAll(Set<Grid.Point> points, E x) {
+        var newMap = new HashMap<>(map);
+        points.forEach(point -> {
+            newMap.put(point, x);
+        });
+        return new Grid<>(newMap);
     }
 }
