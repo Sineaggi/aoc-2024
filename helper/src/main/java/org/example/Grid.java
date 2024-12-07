@@ -69,6 +69,12 @@ public class Grid<E> {
         }).map(Map.Entry::getKey).orElseThrow();
     }
 
+    public Grid<E> replace(Grid.Point point, E x) {
+        var newMap = new HashMap<>(map);
+        newMap.put(point, x);
+        return new Grid<>(newMap);
+    }
+
     public Grid<E> replaceAll(Set<Grid.Point> points, E x) {
         var newMap = new HashMap<>(map);
         points.forEach(point -> {
