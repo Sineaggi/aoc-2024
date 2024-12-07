@@ -17,6 +17,9 @@ public class Grid<E> {
     public Grid(Map<Point, E> map) {
         this.map = map;
     }
+    public Grid() {
+        this.map = new HashMap<>();
+    }
 
     public Stream<Map.Entry<Point, E>> entries() {
         return map.entrySet().stream();
