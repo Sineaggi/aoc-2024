@@ -2,6 +2,8 @@ package org.example;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Day6Test {
@@ -71,5 +73,52 @@ public class Day6Test {
                 ......#O..
                 """;
         assertFalse(() -> Day6.terminates(Day6.parse(input)));
+    }
+
+    @Test
+    public void testPart1() throws IOException {
+        var input = """
+                ....#.....
+                .........#
+                ..........
+                ..#.......
+                .......#..
+                ..........
+                .#..^.....
+                ........#.
+                #.........
+                ......#...
+                """;
+        assertEquals(41, Day6.part1(Day6.parse(input)));
+
+        try (var is = Day6.class.getResourceAsStream("/input")) {
+            input = new String(is.readAllBytes());
+        }
+        assertEquals(4722, Day6.part1(Day6.parse(input)));
+    }
+
+    @Test
+    public void testPart2() throws IOException {
+        var input = """
+                ....#.....
+                .........#
+                ..........
+                ..#.......
+                .......#..
+                ..........
+                .#..^.....
+                ........#.
+                #.........
+                ......#...
+                """;
+        assertEquals(6, Day6.part2(Day6.parse(input)));
+
+        // takes ~30s
+        /*
+        try (var is = Day6.class.getResourceAsStream("/input")) {
+            input = new String(is.readAllBytes());
+        }
+        assertEquals(4722, Day6.part1(Day6.parse(input)));
+         */
     }
 }

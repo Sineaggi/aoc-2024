@@ -33,7 +33,7 @@ public class Day6 {
     }
 
     public static int part1(Grid<String> mapLocGrid) {
-        System.out.println(mapLocGrid);
+        logger.debug(mapLocGrid);
         String dir = "^";
         var point = mapLocGrid.find(dir);
         int xOff = 0;
@@ -78,11 +78,11 @@ public class Day6 {
                     }
                 }
             } else {
-                System.out.println("You're off the grid! You're out of control! " + newPoint);
+                logger.debug("You're off the grid! You're out of control! " + newPoint);
                 break;
             }
         }
-        System.out.println(mapLocGrid.replaceAll(points, "X"));
+        logger.debug(mapLocGrid.replaceAll(points, "X"));
         return points.size();
     }
 
