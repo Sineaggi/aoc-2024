@@ -39,4 +39,13 @@ public class Day8Test {
         }
         assertEquals(247, Day8.part1(Day8.parse(input)));
     }
+
+    @Test
+    public void testPart2() throws IOException {
+        String input;
+        try (var is = Day8.class.getResourceAsStream("/input")) {
+            input = new String(is.readAllBytes());
+        }
+        assertEquals(861, Day8.part2(Day8.parse(input)));
+    }
 }
