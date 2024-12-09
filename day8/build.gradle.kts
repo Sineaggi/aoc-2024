@@ -1,5 +1,6 @@
 plugins {
-    `java-library`
+    java
+    application
 }
 
 group = "org.example"
@@ -10,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    implementation(projects.helper)
 }
 
 testing {
@@ -25,8 +27,20 @@ testing {
     }
 }
 
+application {
+    mainClass.set("org.example.Day8")
+}
+
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("--enable-preview")
+}
+
+tasks.named<JavaExec>("run") {
+    jvmArgs("--enable-preview")
+}
+
+tasks.test {
+    //useJUnitPlatform()
 }
 
 java {

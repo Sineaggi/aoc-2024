@@ -1,6 +1,6 @@
 package org.example;
 
-import java.awt.*;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -80,5 +80,15 @@ public class Grid<E> {
             newMap.put(point, x);
         });
         return new Grid<>(newMap);
+    }
+
+    public List<Point> findAll(E s) {
+        return map.entrySet().stream().filter(i -> i.getValue().equals(s)).map(Map.Entry::getKey).toList();
+    }
+
+    public Grid.Point max() {
+        var maxX = map.keySet().stream().mapToInt(Point::x).max().orElseThrow();
+        var maxY = map.keySet().stream().mapToInt(Point::y).max().orElseThrow();
+        return new Grid.Point(maxX, maxY);
     }
 }

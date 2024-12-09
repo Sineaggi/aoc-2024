@@ -1,10 +1,9 @@
 package org.example;
 
-import java.util.Collection;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -37,5 +36,32 @@ public class Streams {
         var indices = IntStream.iterate(0, i -> i + 1).boxed();
         Stream<Indexed<T>> indexed = zip(stream, indices, (t, index) -> new Indexed(t, index));
         return indexed;
+    }
+
+    // https://stackoverflow.com/a/34159174
+    public static <T> Stream<List<T>> sliding(List<T> list, int size) {
+        if(size > list.size())
+            return Stream.empty();
+        return IntStream.range(0, list.size()-size+1)
+                .mapToObj(start -> list.subList(start, start+size));
+    }
+
+    // https://stackoverflow.com/a/42177178
+    public static <T> Stream<List<T>> combinations(List<T> list) {
+        return list.stream()
+                .flatMap(obj1 -> list.stream().map(obj2 -> List.of(obj1, obj2)));
+    }
+
+    public static <T> Stream<Set<T>> unorderedCombinations(List<T> list) {
+        return list.stream()
+                .flatMap(obj1 -> list.stream().map(obj2 -> {
+                    if (obj1.equals(obj2)) {
+                        return null;
+                    } else {
+                        return Set.of(obj1, obj2);
+                    }
+                }).filter(Objects::nonNull))
+                .collect(Collectors.toSet())
+                .stream();
     }
 }
