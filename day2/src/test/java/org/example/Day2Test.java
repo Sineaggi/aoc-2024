@@ -20,14 +20,14 @@ public class Day2Test {
                 8 6 4 4 1
                 1 3 6 7 9
                 """;
-        System.out.println(Day2.part1impl2(Day2.parse(input::lines)));
+        System.out.println(Day2.part1impl2(Day2.parse(input)));
     }
 
     @Test
     public void testPart1() throws IOException {
         List<List<Integer>> input;
-        try (var reader = new BufferedReader(new InputStreamReader(Day2.class.getResourceAsStream("/input")))) {
-            input = Day2.parse(reader::lines);
+        try (var is = Day2.class.getResourceAsStream("/input")) {
+            input = Day2.parse(new String(is.readAllBytes()));
         }
         assertEquals(591, Day2.part1impl2(input));
     }

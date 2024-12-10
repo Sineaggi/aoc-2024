@@ -3,6 +3,7 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Gatherers;
 import java.util.stream.Stream;
@@ -13,19 +14,14 @@ public class Day2 {
 
     public static void main(String[] args) throws Exception {
         List<List<Integer>> input;
-        try (var reader = new BufferedReader(new InputStreamReader(Day2.class.getResourceAsStream("/input")))) {
-            input = parse(reader::lines);
+        try (var is = Day2.class.getResourceAsStream("/input")) {
+            input = parse(new String(is.readAllBytes()));
         }
         logger.info("part 1: " + part1(input));
         logger.info("part 2: " + part2(input));
     }
 
-    @FunctionalInterface
-    public interface Lines {
-        Stream<String> lines();
-    }
-
-    public static List<List<Integer>> parse(Lines input) {
+    public static List<List<Integer>> parse(String input) {
         return input.lines()
                 .map(line -> {
                     var pattern = Pattern.compile("\\s");
@@ -37,7 +33,7 @@ public class Day2 {
         return input.stream().mapToInt(Day2::safe).sum();
     }
 
-    public static int part1impl2(List<List<Integer>> input) {
+    public static long part1impl2(List<List<Integer>> input) {
         return input.stream().filter(i -> {
             logger.debug("working on " + i);
             var diffs = i.stream().gather(Gatherers.windowSliding(2))
