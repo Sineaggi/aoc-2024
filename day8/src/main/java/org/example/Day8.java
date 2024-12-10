@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Gatherer;
 import java.util.stream.Gatherers;
+import java.util.stream.Stream;
 
 public class Day8 {
 
@@ -51,7 +52,7 @@ public class Day8 {
             }
             System.out.println("nodes " + nodes);
             var antiNodes = Streams.unorderedCombinations(nodes)
-                    .map(Day8::anti)
+                    .map(pair -> Day8.anti(pair, inBounds))
                     .flatMap(Collection::stream)
                     .filter(inBounds)
                     .collect(Collectors.toSet());
@@ -62,13 +63,15 @@ public class Day8 {
         // return 2;
     }
 
-    public static List<Grid.Point> anti(Set<Grid.Point> set) {
+    public static List<Grid.Point> anti(Set<Grid.Point> set, Predicate<Grid.Point> inBounds) {
         var nodes = set.stream().toList();
         var node1 = nodes.get(0);
         var node2 = nodes.get(1);
         var xOffset = node1.x() - node2.x();
         var yOffset = node1.y() - node2.y();
-        return List.of(node1.offset(xOffset, yOffset), node2.offset(-xOffset, -yOffset));
+        return Stream.of(node1.offset(xOffset, yOffset), node2.offset(-xOffset, -yOffset))
+                .filter(inBounds)
+                .toList();
     }
 
     public static long part2(Grid<String> input) {
@@ -91,7 +94,6 @@ public class Day8 {
             var antiNodes = Streams.unorderedCombinations(nodes)
                     .map(pair -> Day8.antiHarmonics(pair, inBounds))
                     .flatMap(Collection::stream)
-                    .filter(inBounds)
                     .collect(Collectors.toSet());
             System.out.println("anti nodes " + antiNodes);
             allAntiNodes.addAll(antiNodes);
