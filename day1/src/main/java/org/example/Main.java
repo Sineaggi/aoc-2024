@@ -49,9 +49,9 @@ public class Main {
         var right = input.stream().sorted(Comparator.comparingInt(f -> f.right()));
         var sorted = Streams.zip(left, right, (l, r) -> {
             return new Pair(l.left(), r.right());
-        }).toList();
+        })//.toList();
         logger.trace(sorted);
-        int out = sorted.stream().collect(Collectors.summingInt(Pair::diff));
+        int out = sorted/*.stream()*/.mapToInt(Pair::diff).sum();//.collect(Collectors.summingInt(Pair::diff));
         logger.trace(out);
         return out;
     }
