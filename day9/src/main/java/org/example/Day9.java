@@ -26,9 +26,9 @@ public class Day9 {
     }
 
     public static long part1(Drive input) {
-        System.out.println("input " + input);
+        //System.out.println("input " + input);
         var reorder = input.reorder();
-        System.out.println(reorder);
+        //System.out.println(reorder);
         return reorder.checksum();
     }
 }

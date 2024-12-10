@@ -2,7 +2,9 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Drive {
@@ -20,20 +22,20 @@ public class Drive {
     }
 
     sealed interface Block {
-        record File(int id) implements Block {
+        int size();
+        private static String toString(String string, int size) {
+            return Stream.generate(() -> string).limit(size).collect(Collectors.joining());
+        }
+        record File(int size, int id) implements Block {
             @Override
             public String toString() {
-                return "" + id;
+                return Block.toString("" + id, size);
             }
         }
-        final class FreeSpace implements Block {
-            private FreeSpace() {}
-            private static final FreeSpace EMPTY = new FreeSpace();
-            public static FreeSpace empty() { return EMPTY; }
-
+        record FreeSpace(int size) implements Block {
             @Override
             public String toString() {
-                return ".";
+                return Block.toString(".", size);
             }
         }
     }
@@ -42,12 +44,14 @@ public class Drive {
         List<Block> blocks = Streams.index(input.chars().boxed()).filter(indexedInput -> !"\n".equals(new String(Character.toChars(indexedInput.obj())))).flatMap(indexedInput -> {
             int index = indexedInput.index();
             int length = Integer.parseInt(new String(Character.toChars(indexedInput.obj())));
+            Stream<Block> blockStream;
             if (index % 2 == 0) {
                 // even
-                return Stream.generate(() -> new Block.File(index / 2)).limit(length);
+                blockStream = Stream.generate(() -> (Block) new Block.File(index / 2, length)).limit(length);
             } else {
-                return Stream.generate(Block.FreeSpace::empty).limit(length);
+                blockStream = Stream.generate(() -> (Block) new Block.FreeSpace(length)).limit(length);
             }
+            return blockStream;
         }).toList();
         return new Drive(blocks);
     }
@@ -55,7 +59,7 @@ public class Drive {
     public Drive reorder() {
         var scratchList = new ArrayList<>(blocks);
         for (int i = 0; i < blocks.size(); i++) {
-            if (blocks.get(i).equals(Block.FreeSpace.empty())) {
+            if (blocks.get(i) instanceof Block.FreeSpace) {
                 // todo: fill it in
                 var blockToMove = findLastFileBlock(scratchList);
                 logger.debug("Found block " + blockToMove);
@@ -65,7 +69,7 @@ public class Drive {
                     break;
                 }
                 scratchList.set(i, blewk);
-                scratchList.set(index, Block.FreeSpace.empty());
+                scratchList.set(index, new Block.FreeSpace(1));
                 logger.debug(new Drive(scratchList));
             } else {
                 continue;
@@ -76,7 +80,7 @@ public class Drive {
 
     private static Streams.Indexed<Block> findLastFileBlock(List<Block> blocks) {
         for (int i = blocks.size() - 1; i >= 0; i--) {
-            if (blocks.get(i).equals(Block.FreeSpace.empty())) {
+            if (blocks.get(i) instanceof Block.FreeSpace) {
                 continue;
             } else {
                 return new Streams.Indexed(blocks.get(i), i);
@@ -87,7 +91,7 @@ public class Drive {
 
     private static Streams.Indexed<Block> findLastFileBlockWithIndex(List<Block> blocks) {
         return Streams.index(blocks.reversed())
-                .filter(block -> !block.obj().equals(Block.FreeSpace.empty()))
+                .filter(block -> !(block.obj() instanceof Block.FreeSpace))
                 .findFirst()
                 .orElseThrow();
     }
@@ -96,7 +100,7 @@ public class Drive {
         long sum = 0;
         for (int i = 0; i < blocks.size(); i++) {
             var block = blocks.get(i);
-            if (block instanceof Block.File(int id)) {
+            if (block instanceof Block.File(int id, int size)) {
                 sum += (long) id * (long) i;
             }
         }
