@@ -45,6 +45,10 @@ public class Grid<E> {
         return map.get(point);
     }
 
+    public boolean has(Point point) {
+        return map.containsKey(point);
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         var x = map.keySet().stream().mapToInt(Point::x).max().orElseThrow() + 1;
