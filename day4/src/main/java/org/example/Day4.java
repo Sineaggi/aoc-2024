@@ -12,21 +12,25 @@ public class Day4 {
         Grid<String> input;
         try (var is = Day4.class.getResourceAsStream("/input")) {
             String str = new String(is.readAllBytes());
-            var map = Streams.index(str.lines()).flatMap(indexedLine -> {
-                int y = indexedLine.index();
-                return Streams.index(indexedLine.obj().chars().boxed()).map(indexedChar -> {
-                        int x = indexedChar.index();
-                        return Map.entry(new Grid.Point(x, y), new String(Character.toChars(indexedChar.obj())));
-                });
-            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            input = new Grid<>(map);
+            input = parse(str);
             logger.debug(input);
         }
         logger.info("part 1: " + part1(input));
         logger.info("part 2: " + part2(input));
     }
 
-    private static int part1(Grid<String> input) {
+    public static Grid<String> parse(String str) {
+        var map = Streams.index(str.lines()).flatMap(indexedLine -> {
+            int y = indexedLine.index();
+            return Streams.index(indexedLine.obj().codePoints().mapToObj(Character::toString)).map(indexedChar -> {
+                int x = indexedChar.index();
+                return Map.entry(new Grid.Point(x, y), indexedChar.obj());
+            });
+        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return new Grid<>(map);
+    }
+
+    public static int part1(Grid<String> input) {
         return input.entries()
                 .mapToInt(entry -> find(input, entry.getKey()))
                 .sum();
@@ -56,7 +60,7 @@ public class Day4 {
     private static int findContinue(Grid<String> input, Grid.Point prevPoint, String string, Function<Grid.Point, Grid.Point> directionIncFunction) {
         Grid.Point point = directionIncFunction.apply(prevPoint);
         String charAtPoint = input.get(point);
-        String lookingFor = new String(Character.toChars(string.charAt(0)));
+        String lookingFor = Character.toString(string.codePointAt(0));
         logger.debug(lookingFor);
         String rest = string.substring(1);
         logger.debug("looking for: " + string + ", next " + rest);
@@ -72,7 +76,7 @@ public class Day4 {
         }
     }
 
-    private static int part2(Grid<String> input) {
+    public static int part2(Grid<String> input) {
         return input.entries()
                 .mapToInt(entry -> find2(input, entry.getKey()))
                 .sum();
