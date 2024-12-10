@@ -25,9 +25,9 @@ public class Day8 {
         var map = Streams.index(input.lines()).flatMap(indexedLine -> {
             int y = indexedLine.index();
             String line = indexedLine.obj();
-            return Streams.index(line.chars().boxed()).map(indexedChar -> {
+            return Streams.index(line.codePoints().mapToObj(Character::toString)).map(indexedChar -> {
                 int x = indexedChar.index();
-                String ch = new String(Character.toChars(indexedChar.obj()));
+                String ch = indexedChar.obj();
                 return Map.entry(new Grid.Point(x, y), ch);
             });
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
