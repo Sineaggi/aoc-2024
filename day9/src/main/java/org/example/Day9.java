@@ -17,7 +17,7 @@ public class Day9 {
             input = parse(str);
         }
         logger.info("part 1: " + part1(input));
-        //logger.info("part 2: " + part2(input));
+        logger.info("part 2: " + part2(input));
     }
 
     public static Drive parse(String input) {
@@ -26,6 +26,13 @@ public class Day9 {
     }
 
     public static long part1(Drive input) {
+        //System.out.println("input " + input);
+        var reorder = input.reorder();
+        //System.out.println(reorder);
+        return reorder.checksum();
+    }
+
+    public static long part2(Drive input) {
         //System.out.println("input " + input);
         var reorder = input.reorder();
         //System.out.println(reorder);

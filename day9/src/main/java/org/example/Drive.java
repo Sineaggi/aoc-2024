@@ -41,17 +41,17 @@ public class Drive {
     }
 
     public static Drive parse(String input) {
-        List<Block> blocks = Streams.index(input.chars().boxed()).filter(indexedInput -> !"\n".equals(new String(Character.toChars(indexedInput.obj())))).flatMap(indexedInput -> {
+        List<Block> blocks = Streams.index(input.codePoints().mapToObj(Character::toString))
+                .filter(indexedInput -> !"\n".equals(indexedInput.obj()))
+                .map(indexedInput -> {
             int index = indexedInput.index();
-            int length = Integer.parseInt(new String(Character.toChars(indexedInput.obj())));
-            Stream<Block> blockStream;
+            int length = Integer.parseInt(indexedInput.obj());
             if (index % 2 == 0) {
                 // even
-                blockStream = Stream.generate(() -> (Block) new Block.File(index / 2, length)).limit(length);
+                return new Block.File(index / 2, length);
             } else {
-                blockStream = Stream.generate(() -> (Block) new Block.FreeSpace(length)).limit(length);
+                return (Block) new Block.FreeSpace(length);
             }
-            return blockStream;
         }).toList();
         return new Drive(blocks);
     }
@@ -84,6 +84,40 @@ public class Drive {
                 continue;
             } else {
                 return new Streams.Indexed(blocks.get(i), i);
+            }
+        }
+        throw new RuntimeException("Could not find last file block");
+    }
+
+    public Drive reorderContinuous() {
+        var scratchList = new ArrayList<>(blocks);
+        for (int i = 0; i < blocks.size(); i++) {
+            if (blocks.get(i) instanceof Block.FreeSpace(int size)) {
+                // todo: fill it in
+                var blockToMove = findLastFileBlock(scratchList, size);
+                logger.debug("Found block " + blockToMove);
+                var blewk = blockToMove.obj();
+                var index = blockToMove.index();
+                if (index < i) {
+                    break;
+                }
+                scratchList.set(i, blewk);
+                scratchList.set(index, new Block.FreeSpace(1));
+                logger.debug(new Drive(scratchList));
+            } else {
+                continue;
+            }
+        }
+        return new Drive(scratchList);
+    }
+
+    private static Streams.Indexed<Block.File> findLastFileBlock(List<Block> blocks, int emptySize) {
+        for (int i = blocks.size() - 1; i >= 0; i--) {
+            var block = blocks.get(i);
+            if (block instanceof Block.File file && file instanceof Block.File(int fileSize, int _)) {
+                if (fileSize <= emptySize) {
+                    return new Streams.Indexed(file, i);
+                }
             }
         }
         throw new RuntimeException("Could not find last file block");
