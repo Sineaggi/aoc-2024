@@ -1,16 +1,11 @@
 package org.example;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Day9Test {
     @Test
-    //@Disabled
     public void test() {
         var input = """
                 2333133121414131402
@@ -32,12 +27,14 @@ public class Day9Test {
     }
 
     @Test
-    @Disabled
-    public void testPart1() throws IOException {
-        String input;
-        try (var is = Day9.class.getResourceAsStream("/input")) {
-            input = new String(is.readAllBytes());
-        }
-        assertEquals(6349606724455L, Day9.part1(Day9.parse(input)));
+    public void testPart1() {
+        Drive input = Day9.parse(Day9.load());
+        assertEquals(6349606724455L, Day9.part1(input));
+    }
+
+    @Test
+    public void testPart2() {
+        Drive input = Day9.parse(Day9.load());
+        assertEquals(6376648986651L, Day9.part2(input));
     }
 }

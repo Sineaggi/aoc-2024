@@ -1,16 +1,16 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Drive {
 
     private static final Logger logger = Logger.getLogger(Drive.class);
+
     private final List<Block> blocks;
 
     private Drive(List<Block> blocks) {
@@ -19,7 +19,7 @@ public class Drive {
 
     @Override
     public String toString() {
-        return blocks.stream().map(Block::toString).collect(Collectors.joining(""));
+        return blocks.stream().map(Block::toString).collect(Collectors.joining());
     }
 
     sealed interface Block {
@@ -58,22 +58,13 @@ public class Drive {
     }
 
     public Drive reorder() {
-        return new Drive(blocks.stream().flatMap(f -> {
-            if (f instanceof Block.FreeSpace(int size)) {
-                return Stream.generate(() -> (Block) new Block.FreeSpace(1)).limit(size);
-            } else if (f instanceof Block.File(int size, int id)) {
-                return Stream.generate(() -> new Block.File(1, id)).limit(size);
-            } else {
-                throw new IllegalStateException();
-            }
-        }).toList()).reorderContinuous();
-    }
-
-    public Drive reorderContinuous() {
-        var scratchList = new ArrayList<>(blocks);
-        // todo: reloop
-        for (int i = 0; i < blocks.size(); i++) {
-            if (blocks.get(i) instanceof Block.FreeSpace(int size)) {
+        var drive = new Drive(blocks.stream().flatMap(block -> switch (block) {
+            case Block.FreeSpace(int size) -> Stream.generate(() -> (Block) new Block.FreeSpace(1)).limit(size);
+            case Block.File(int size, int id) -> Stream.generate(() -> new Block.File(1, id)).limit(size);
+        }).toList());
+        var scratchList = new ArrayList<>(drive.blocks);
+        for (int i = 0; i < scratchList.size(); i++) {
+            if (scratchList.get(i) instanceof Block.FreeSpace(int size)) {
                 // todo: fill it in
                 var indexedBlockToMove = findLastFileBlock(scratchList, size).orElse(null);
                 if (indexedBlockToMove == null) {
@@ -87,19 +78,79 @@ public class Drive {
                 }
                 scratchList.set(i, blockToMove);
                 scratchList.set(index, new Block.FreeSpace(blockToMove.size()));
-                if (size > blockToMove.size()) {
-                    scratchList.add(i + 1, new Block.FreeSpace(size - blockToMove.size()));
-                } else if (size < blockToMove.size()) {
-                    throw new IllegalStateException("should not enter here");
-                } else {
-                    // do nothing: just the standard case, simple swap
-                }
-                System.out.println(new Drive(scratchList));
+                logger.debug(new Drive(scratchList));
             } else {
                 continue;
             }
         }
         return new Drive(scratchList);
+    }
+
+    public Drive reorderContinuous() {
+        var scratchList = new ArrayList<>(blocks);
+        var attempted = new HashSet<Integer>();
+        loop:
+        while (true) {
+            for (int i = scratchList.size() - 1; i >= 0; i--) {
+                if (scratchList.get(i) instanceof Block.File file) {
+                    int size = file.size();
+                    if (attempted.contains(file.id())) {
+                        continue;
+                    } else {
+                        attempted.add(file.id());
+                    }
+                    var indexedFreeSpace = findLeftmostSpanOfFreeSpace(scratchList, size).orElse(null);
+                    if (indexedFreeSpace == null) {
+                        continue;
+                    }
+                    logger.debug("Found block " + indexedFreeSpace);
+                    Block.FreeSpace freeSpace = indexedFreeSpace.obj();
+                    int index = indexedFreeSpace.index();
+                    if (index > i) {
+                        continue;
+                    }
+                    scratchList.set(index, file);
+                    scratchList.set(i, new Block.FreeSpace(size));
+                    if (freeSpace.size() > file.size()) {
+                        scratchList.add(index + 1, new Block.FreeSpace(freeSpace.size() - size));
+                    }
+                    combineFreeSpace(scratchList);
+                    //System.out.println(new Drive(scratchList));
+                    continue loop;
+                } else {
+                    continue;
+                }
+            }
+            break;
+        }
+        return new Drive(scratchList);
+    }
+
+    private void combineFreeSpace(List<Block> blocks) {
+        loop:
+        while (true) {
+            for (int i = 0; i < blocks.size() - 1; i++) {
+                if (blocks.get(i) instanceof Block.FreeSpace block) {
+                    if (blocks.get(i + 1) instanceof Block.FreeSpace nextBlock) {
+                        blocks.remove(i + 1);
+                        blocks.set(i, new Block.FreeSpace(block.size() + nextBlock.size()));
+                        continue loop;
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    public static Optional<Indexed<Block.FreeSpace>> findLeftmostSpanOfFreeSpace(List<Block> blocks, int emptySize) {
+        for (int i = 0; i < blocks.size(); i++) {
+            if (blocks.get(i) instanceof Block.FreeSpace block) {
+                if (block.size() >= emptySize) {
+                    return Optional.of(new Indexed<>(block, i));
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     private static Optional<Indexed<Block.File>> findLastFileBlock(List<Block> blocks, int emptySize) {
@@ -123,11 +174,28 @@ public class Drive {
 
     public long checksum() {
         long sum = 0;
-        for (int i = 0; i < blocks.size(); i++) {
-            var block = blocks.get(i);
-            if (block instanceof Block.File(int id, int size)) {
-                sum += (long) id * (long) i * (long) size;
+        int position = 0;
+        for (var block : blocks) {
+            //System.out.println("block: " + block);
+            //if (block instanceof Block.File(int id, int size)) {
+            //    System.out.println("Found block " + id + " with size " + size);
+            //    for (int j = 0; j < block.size(); j++) {
+            //        sum += (long) id * (long) position;
+            //        position++;
+            //    }
+            //} else if (block instanceof SizedDrive.Block.FreeSpace(int size)) {
+            //    position += size;
+            //}
+            switch (block) {
+                case Block.File(int size, int id) -> {
+                    for (int j = 0; j < size; j++) {
+                        sum += (long) id * (long) position;
+                        position++;
+                    }
+                }
+                case Block.FreeSpace(int size) -> position += size;
             }
+            //position++;
         }
         return sum;
     }
