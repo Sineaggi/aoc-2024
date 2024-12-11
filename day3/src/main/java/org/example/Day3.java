@@ -11,17 +11,18 @@ public class Day3 {
     private static final Logger logger = Logger.getLogger(Day3.class);
 
     public static void main(String[] args) throws Exception {
-        String input;
-        try (var is = Day3.class.getResourceAsStream("/input")) {
-            input = new String(is.readAllBytes());
-        }
+        String input = load();
         // prints 184576302
         logger.info("part 1: " + part1(input));
         // prints 118173507
         logger.info("part 2: " + part2(input));
     }
 
-    private static int part1(String input) {
+    public static String load() {
+        return Classes.loadResource(Day3.class, "/input");
+    }
+
+    public static int part1(String input) {
         Pattern p = Pattern.compile("mul\\((?<left>\\d{1,3}),(?<right>\\d{1,3})\\)");
 
         Matcher matcher = p.matcher(input);
@@ -33,7 +34,7 @@ public class Day3 {
                 }).sum();
     }
 
-    private static int part2(String input) {
+    public static int part2(String input) {
         Pattern p = Pattern.compile("mul\\((?<left>\\d{1,3}),(?<right>\\d{1,3})\\)");
         Pattern y = Pattern.compile("do\\(\\)");
         Pattern n = Pattern.compile("don't\\(\\)");

@@ -14,6 +14,19 @@ dependencies {
     implementation(projects.helper)
 }
 
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter(libs.versions.junit)
+            targets.configureEach {
+                testTask.configure {
+                    jvmArgs("--enable-preview")
+                }
+            }
+        }
+    }
+}
+
 application {
     mainClass.set("org.example.Day3")
 }
