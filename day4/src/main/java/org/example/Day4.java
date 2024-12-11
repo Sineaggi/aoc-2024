@@ -8,15 +8,14 @@ public class Day4 {
 
     private static final Logger logger = Logger.getLogger(Day4.class);
 
-    public static void main(String[] args) throws Exception {
-        Grid<String> input;
-        try (var is = Day4.class.getResourceAsStream("/input")) {
-            String str = new String(is.readAllBytes());
-            input = parse(str);
-            logger.debug(input);
-        }
+    public static void main(String[] args) {
+        Grid<String> input = parse(load());
         logger.info("part 1: " + part1(input));
         logger.info("part 2: " + part2(input));
+    }
+
+    public static String load() {
+        return Classes.loadResource(Day4.class, "/input");
     }
 
     public static Grid<String> parse(String str) {
