@@ -24,11 +24,14 @@ public class Day2Test {
     }
 
     @Test
-    public void testPart1() throws IOException {
-        List<List<Integer>> input;
-        try (var is = Day2.class.getResourceAsStream("/input")) {
-            input = Day2.parse(new String(is.readAllBytes()));
-        }
+    public void testPart1() {
+        List<List<Integer>> input = Day2.parse(Day2.load());
         assertEquals(591, Day2.part1impl2(input));
+    }
+
+    @Test
+    public void testPart2() {
+        List<List<Integer>> input = Day2.parse(Day2.load());
+        assertEquals(621, Day2.part2(input));
     }
 }

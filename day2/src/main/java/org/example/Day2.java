@@ -12,13 +12,14 @@ public class Day2 {
 
     private static final Logger logger = Logger.getLogger(Day2.class);
 
-    public static void main(String[] args) throws Exception {
-        List<List<Integer>> input;
-        try (var is = Day2.class.getResourceAsStream("/input")) {
-            input = parse(new String(is.readAllBytes()));
-        }
+    public static void main(String[] args) {
+        List<List<Integer>> input = parse(load());
         logger.info("part 1: " + part1(input));
         logger.info("part 2: " + part2(input));
+    }
+
+    public static String load() {
+        return Classes.loadResource(Day2.class, "/input");
     }
 
     public static List<List<Integer>> parse(String input) {
@@ -68,7 +69,7 @@ public class Day2 {
         return 1;
     }
 
-    private static int part2(List<List<Integer>> input) {
+    public static int part2(List<List<Integer>> input) {
         return input.stream().mapToInt(f -> {
             if (safe(f) == 1) {
                 return 1;
