@@ -1,6 +1,6 @@
 package org.example;
 
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Day10 {
@@ -37,36 +37,50 @@ public class Day10 {
         var trailheads = input.findAll(0);
         var sum = 0;
         for (var trailhead : trailheads) {
-            sum += trailhead(input, 0, trailhead);
+            var ends = trailheads(input, 0, trailhead);
+            sum += ends.size();
         }
         return sum;
     }
 
-    public static int trailhead(Grid<Integer> input, int index, Grid.Point currentLoc) {
-        if (index == 9) {
-            return 1;
+    public static Set<Grid.Point> trailheads(Grid<Integer> input, int index, Grid.Point currentLoc) {
+        if (!input.contains(currentLoc, index)) {
+            return Collections.emptySet();
+        } else {
+            if (index == 9) {
+                return Set.of(currentLoc);
+            }
+            Set<Grid.Point> set = new HashSet<>();
+            set.addAll(trailheads(input, index + 1, currentLoc.offset(0, 1)));
+            set.addAll(trailheads(input, index + 1, currentLoc.offset(0, -1)));
+            set.addAll(trailheads(input, index + 1, currentLoc.offset(1, 0)));
+            set.addAll(trailheads(input, index + 1, currentLoc.offset(-1, 0)));
+            return set;
         }
-        var sum = 0;
-        var up = currentLoc.offset(0, 1);
-        if (input.contains(up, index + 1)) {
-            sum += trailhead(input, index + 1, up);
+    }
+
+    public static int trails(Grid<Integer> input, int index, Grid.Point currentLoc) {
+        if (!input.contains(currentLoc, index)) {
+            return 0;
+        } else {
+            if (index == 9) {
+                return 1;
+            }
+            int sum = 0;
+            sum += trails(input, index + 1, currentLoc.offset(0, 1));
+            sum += trails(input, index + 1, currentLoc.offset(0, -1));
+            sum += trails(input, index + 1, currentLoc.offset(1, 0));
+            sum += trails(input, index + 1, currentLoc.offset(-1, 0));
+            return sum;
         }
-        var down = currentLoc.offset(0, -1);
-        if (input.contains(down, index + 1)) {
-            sum += trailhead(input, index + 1, down);
-        }
-        var right = currentLoc.offset(1, 0);
-        if (input.contains(right, index + 1)) {
-            sum += trailhead(input, index + 1, right);
-        }
-        var left = currentLoc.offset(-1, 0);
-        if (input.contains(left, index + 1)) {
-            sum += trailhead(input, index + 1, left);
-        }
-        return sum;
     }
 
     public static long part2(Grid<Integer> input) {
-        return -1;
+        var trailheads = input.findAll(0);
+        var sum = 0;
+        for (var trailhead : trailheads) {
+            sum += trails(input, 0, trailhead);
+        }
+        return sum;
     }
 }
