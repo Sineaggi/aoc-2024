@@ -33,6 +33,7 @@ application {
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("--enable-preview")
+    options.compilerArgs.add( "-Xlint:unchecked")
 }
 
 tasks.named<JavaExec>("run") {

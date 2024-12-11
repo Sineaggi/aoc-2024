@@ -2,6 +2,7 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -48,7 +49,7 @@ public class Drive {
             int length = Integer.parseInt(indexedInput.obj());
             if (index % 2 == 0) {
                 // even
-                return new Block.File(index / 2, length);
+                return new Block.File(length, index / 2);
             } else {
                 return (Block) new Block.FreeSpace(length);
             }
@@ -58,23 +59,34 @@ public class Drive {
 
     public Drive reorder() {
         var scratchList = new ArrayList<>(blocks);
-        for (int i = 0; i < blocks.size(); i++) {
-            if (blocks.get(i) instanceof Block.FreeSpace) {
-                // todo: fill it in
-                var blockToMove = findLastFileBlock(scratchList);
-                logger.debug("Found block " + blockToMove);
-                var blewk = blockToMove.obj();
-                var index = blockToMove.index();
-                if (index < i) {
-                    break;
+        //while (true) {
+            for (int i = 0; i < blocks.size(); i++) {
+                if (blocks.get(i) instanceof Block.FreeSpace(int size)) {
+                    var indexedBlockToMove = findLastFileBlock(scratchList);
+                    logger.debug("Found block " + indexedBlockToMove);
+                    var blockToMove = indexedBlockToMove.obj();
+                    var index = indexedBlockToMove.index();
+                    if (index < i) {
+                        break;
+                    }
+                    //if (size == blockToMove.size()) {
+                    //    scratchList.set(i, blockToMove);
+                    //    scratchList.set(index, new Block.FreeSpace(size));
+                    //} else if (size > blockToMove.size()) {
+                    //    scratchList.set(i, blockToMove);
+                    //    scratchList.set(index, new Block.FreeSpace(blockToMove.size()));
+                    //    scratchList.add(i + 1, new Block.FreeSpace(size - blockToMove.size()));
+                    //} else {
+                    //    scratchList.set(i, new Block.File(blockToMove.id(), size));
+                    //    // todo
+                    //}
+
+                    logger.debug(new Drive(scratchList));
+                } else {
+                    continue;
                 }
-                scratchList.set(i, blewk);
-                scratchList.set(index, new Block.FreeSpace(1));
-                logger.debug(new Drive(scratchList));
-            } else {
-                continue;
             }
-        }
+        //}
         return new Drive(scratchList);
     }
 
@@ -83,7 +95,7 @@ public class Drive {
             if (blocks.get(i) instanceof Block.FreeSpace) {
                 continue;
             } else {
-                return new Streams.Indexed(blocks.get(i), i);
+                return new Streams.Indexed<>(blocks.get(i), i);
             }
         }
         throw new RuntimeException("Could not find last file block");
@@ -91,19 +103,30 @@ public class Drive {
 
     public Drive reorderContinuous() {
         var scratchList = new ArrayList<>(blocks);
+        // todo: reloop
         for (int i = 0; i < blocks.size(); i++) {
             if (blocks.get(i) instanceof Block.FreeSpace(int size)) {
                 // todo: fill it in
-                var blockToMove = findLastFileBlock(scratchList, size);
-                logger.debug("Found block " + blockToMove);
-                var blewk = blockToMove.obj();
-                var index = blockToMove.index();
+                var indexedBlockToMove = findLastFileBlock(scratchList, size).orElse(null);
+                if (indexedBlockToMove == null) {
+                    continue;
+                }
+                logger.debug("Found block " + indexedBlockToMove);
+                var blockToMove = indexedBlockToMove.obj();
+                var index = indexedBlockToMove.index();
                 if (index < i) {
                     break;
                 }
-                scratchList.set(i, blewk);
-                scratchList.set(index, new Block.FreeSpace(1));
-                logger.debug(new Drive(scratchList));
+                scratchList.set(i, blockToMove);
+                scratchList.set(index, new Block.FreeSpace(blockToMove.size()));
+                if (size > blockToMove.size()) {
+                    scratchList.set(i + 1, new Block.FreeSpace(size - blockToMove.size()));
+                } else if (size < blockToMove.size()) {
+                    throw new IllegalStateException("should not enter here");
+                } else {
+                    // do nothing: just the standard case, simple swap
+                }
+                System.out.println(new Drive(scratchList));
             } else {
                 continue;
             }
@@ -111,16 +134,16 @@ public class Drive {
         return new Drive(scratchList);
     }
 
-    private static Streams.Indexed<Block.File> findLastFileBlock(List<Block> blocks, int emptySize) {
+    private static Optional<Streams.Indexed<Block.File>> findLastFileBlock(List<Block> blocks, int emptySize) {
         for (int i = blocks.size() - 1; i >= 0; i--) {
             var block = blocks.get(i);
             if (block instanceof Block.File file && file instanceof Block.File(int fileSize, int _)) {
                 if (fileSize <= emptySize) {
-                    return new Streams.Indexed(file, i);
+                    return Optional.of(new Streams.Indexed<>(file, i));
                 }
             }
         }
-        throw new RuntimeException("Could not find last file block");
+        return Optional.empty();
     }
 
     private static Streams.Indexed<Block> findLastFileBlockWithIndex(List<Block> blocks) {
