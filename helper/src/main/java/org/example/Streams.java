@@ -22,10 +22,6 @@ public class Streams {
         }, false);
     }
 
-    public value record Indexed<T>(T obj, int index) {
-
-    }
-
     public static <T> Stream<Indexed<T>> index(Collection<T> collection) {
         var indices = IntStream.range(0, collection.size()).boxed();
         Stream<Indexed<T>> indexed = zip(collection.stream(), indices, (t, index) -> new Indexed(t, index));

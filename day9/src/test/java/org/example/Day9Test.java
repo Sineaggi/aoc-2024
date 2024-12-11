@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class Day9Test {
     @Test
-    @Disabled
+    //@Disabled
     public void test() {
         var input = """
                 2333133121414131402

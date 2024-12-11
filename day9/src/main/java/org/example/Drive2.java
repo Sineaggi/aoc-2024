@@ -56,7 +56,7 @@ public class Drive2 {
             var block = blocks.get(i);
             if (block instanceof Block.FreeSpace(int size)) {
                 // todo: fill it in
-                Streams.Indexed<Block.File> indexedBlockToMove = findLastFileBlock(scratchList, size);
+                Indexed<Block.File> indexedBlockToMove = findLastFileBlock(scratchList, size);
                 System.out.println("Found block " + indexedBlockToMove);
                 Block.File blockToMove = indexedBlockToMove.obj();
                 int index = indexedBlockToMove.index();
@@ -84,11 +84,11 @@ public class Drive2 {
         return new Drive2(scratchList);
     }
 
-    private static Streams.Indexed<Block.File> findLastFileBlock(List<Block> blocks, int size) {
+    private static Indexed<Block.File> findLastFileBlock(List<Block> blocks, int size) {
         for (int i = blocks.size() - 1; i >= 0; i--) {
             var block = blocks.get(i);
             if (block instanceof Block.File(int id, int size1) && size1 <= size) {
-                return new Streams.Indexed<>((Block.File) block, i);
+                return new Indexed<>((Block.File) block, i);
             }
         }
         throw new RuntimeException("Could not find last file block");
