@@ -176,26 +176,12 @@ public class Drive {
         long sum = 0;
         int position = 0;
         for (var block : blocks) {
-            //System.out.println("block: " + block);
-            //if (block instanceof Block.File(int id, int size)) {
-            //    System.out.println("Found block " + id + " with size " + size);
-            //    for (int j = 0; j < block.size(); j++) {
-            //        sum += (long) id * (long) position;
-            //        position++;
-            //    }
-            //} else if (block instanceof SizedDrive.Block.FreeSpace(int size)) {
-            //    position += size;
-            //}
-            switch (block) {
-                case Block.File(int size, int id) -> {
-                    for (int j = 0; j < size; j++) {
-                        sum += (long) id * (long) position;
-                        position++;
-                    }
+            if (block instanceof Block.File(int size, int id)) {
+                for (int j = 0; j < size; j++) {
+                    sum += (long) id * ((long) position + j);
                 }
-                case Block.FreeSpace(int size) -> position += size;
             }
-            //position++;
+            position += block.size();
         }
         return sum;
     }
