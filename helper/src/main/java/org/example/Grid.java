@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Grid<E> {
@@ -90,9 +92,13 @@ public class Grid<E> {
         return map.entrySet().stream().filter(i -> i.getValue().equals(s)).map(Map.Entry::getKey).toList();
     }
 
-    public Grid.Point max() {
+    public Point max() {
         var maxX = map.keySet().stream().mapToInt(Point::x).max().orElseThrow();
         var maxY = map.keySet().stream().mapToInt(Point::y).max().orElseThrow();
-        return new Grid.Point(maxX, maxY);
+        return new Point(maxX, maxY);
+    }
+
+    static <E> Collector<Map.Entry<Point, E>, ?, Grid<E>> toGrid() {
+        return Collectors.collectingAndThen(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue), Grid::new);
     }
 }
