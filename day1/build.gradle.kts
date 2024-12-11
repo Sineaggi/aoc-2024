@@ -12,12 +12,23 @@ repositories {
 
 dependencies {
     implementation(projects.helper)
-    //estImplementation(platform("org.junit:junit-bom:5.10.0"))
-    //estImplementation("org.junit.jupiter:junit-jupiter")
+}
+
+testing {
+    suites {
+        val test by getting(JvmTestSuite::class) {
+            useJUnitJupiter(libs.versions.junit)
+            targets.configureEach {
+                testTask.configure {
+                    jvmArgs("--enable-preview")
+                }
+            }
+        }
+    }
 }
 
 application {
-    mainClass.set("org.example.Main")
+    mainClass.set("org.example.Day1")
 }
 
 tasks.withType<JavaCompile>().configureEach {

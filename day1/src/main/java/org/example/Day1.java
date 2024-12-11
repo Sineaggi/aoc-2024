@@ -3,18 +3,14 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
+import java.io.UncheckedIOException;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-public class Main {
+public class Day1 {
 
-    private static final Logger logger = Logger.getLogger(Main.class);
+    private static final Logger logger = Logger.getLogger(Day1.class);
 
     value record Pair(int left, int right) {
         int diff() {
@@ -22,20 +18,24 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        List<Pair> input;
-        try (var reader = new BufferedReader(new InputStreamReader(Main.class.getResourceAsStream("/input")))) {
-            //input = new String(Objects.requireNonNull(is).readAllBytes());
-            input = reader.lines()
-                    .map(line -> {
-                        var split = line.split(" {3}");
-                        //split[0]
-                        return new Pair(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
-                    }).toList();
-        }
+    public static void main(String[] args) {
+        List<Pair> input = parse(load());
         logger.info("part 1: " + part1(input));
         logger.info("part 2: " + part2(input));
     }
+
+    public static String load() {
+        return Classes.loadResource(Day1.class, "/input");
+    }
+
+    public static List<Pair> parse(String str) {
+        return str.lines()
+                .map(line -> {
+                    var split = line.split(" {3}");
+                    return new Pair(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                }).toList();
+    }
+
     public static int part1(List<Pair> input) {
         //var lefts = new ArrayList<>();
         //var rights = new ArrayList<>();
@@ -47,11 +47,9 @@ public class Main {
         //}).toList();
         var left = input.stream().sorted(Comparator.comparingInt(f -> f.left()));
         var right = input.stream().sorted(Comparator.comparingInt(f -> f.right()));
-        var sorted = Streams.zip(left, right, (l, r) -> {
-            return new Pair(l.left(), r.right());
-        })//.toList();
+        var sorted = Streams.zip(left, right, (l, r) -> new Pair(l.left(), r.right()));
         logger.trace(sorted);
-        int out = sorted/*.stream()*/.mapToInt(Pair::diff).sum();//.collect(Collectors.summingInt(Pair::diff));
+        int out = sorted.mapToInt(Pair::diff).sum();
         logger.trace(out);
         return out;
     }
