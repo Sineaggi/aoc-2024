@@ -1,9 +1,8 @@
 package org.example;
 
+import java.util.*;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,6 +95,50 @@ public class Grid<E> {
         var maxX = map.keySet().stream().mapToInt(Point::x).max().orElseThrow();
         var maxY = map.keySet().stream().mapToInt(Point::y).max().orElseThrow();
         return new Point(maxX, maxY);
+    }
+
+    public value record Node(Point point, int weight) {
+
+    }
+
+    public int shortestDistance(Point a, Point b, Function<Point, List<Node>> adjacent) {
+
+        int INF = 999999999;
+        System.out.println(map.get(b).toString());
+        Map<Point, Integer> dist = new HashMap<>(map.entrySet().stream().map(entry -> Map.entry(entry.getKey(), INF)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+
+        dist.put(a, 0);
+
+        // Comparator lambda function that enables the priority queue to store the nodes
+        // based on the distance in the ascending order.
+        Comparator<Node> nodeDistComparator = (obj1, obj2) -> Integer.compare(obj2.weight(), obj1.weight());
+
+        //Set<Point> unvisited = new HashSet<>(map.keySet());
+        //Map<Point, Integer> dist = new HashMap<>();
+        PriorityQueue<Node> pq = new PriorityQueue<>(nodeDistComparator);
+
+        pq.add(new Node(a, 0));
+
+        while (!pq.isEmpty()) {
+            Node u = pq.poll();
+
+            Point currentSource  = u.point();
+
+            for (Node node : adjacent.apply(currentSource)) {
+                Point adjacentPoint = node.point();
+                int lengthToAdjacentNode = node.weight();
+
+                if (dist.get(adjacentPoint) > lengthToAdjacentNode + dist.get(currentSource)) {
+                    if (dist.get(adjacentPoint) != INF) {
+                        pq.remove(new Node(adjacentPoint, dist.get(adjacentPoint)));
+                    }
+                    dist.put(adjacentPoint, lengthToAdjacentNode + dist.get(currentSource));
+                    pq.add(new Node(adjacentPoint, dist.get(adjacentPoint)));
+                }
+            }
+        }
+
+        return dist.get(b);
     }
 
     static <E> Collector<Map.Entry<Point, E>, ?, Grid<E>> toGrid() {

@@ -12,5 +12,6 @@ include("day8")
 include("day9")
 include("day10")
 include("day11")
+include("day18")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
