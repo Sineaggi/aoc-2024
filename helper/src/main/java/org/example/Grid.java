@@ -97,14 +97,14 @@ public class Grid<E> {
         return new Point(maxX, maxY);
     }
 
-    public value record Node(Point point, int weight) {
+    public record Node(Point point, int weight) {
 
     }
 
     public int shortestDistance(Point a, Point b, Function<Point, List<Node>> adjacent) {
 
         int INF = 999999999;
-        System.out.println(map.get(b).toString());
+        //System.out.println(map.get(b).toString());
         Map<Point, Integer> dist = new HashMap<>(map.entrySet().stream().map(entry -> Map.entry(entry.getKey(), INF)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
         dist.put(a, 0);
@@ -113,8 +113,6 @@ public class Grid<E> {
         // based on the distance in the ascending order.
         Comparator<Node> nodeDistComparator = (obj1, obj2) -> Integer.compare(obj2.weight(), obj1.weight());
 
-        //Set<Point> unvisited = new HashSet<>(map.keySet());
-        //Map<Point, Integer> dist = new HashMap<>();
         PriorityQueue<Node> pq = new PriorityQueue<>(nodeDistComparator);
 
         pq.add(new Node(a, 0));
